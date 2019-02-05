@@ -19,6 +19,7 @@
 
 var Tokenizer = require("./Tokenizer");
 var DictionaryLoader = require("./loader/NodeDictionaryLoader");
+var CustomDictionaryLoader = require("./loader/CustomDictionaryLoader");
 
 /**
  * TokenizerBuilder create Tokenizer instance.
@@ -27,11 +28,14 @@ var DictionaryLoader = require("./loader/NodeDictionaryLoader");
  * @constructor
  */
 function TokenizerBuilder(option) {
+    console.log('tokenizer builder opts', option)
     if (option.dicPath == null) {
         this.dic_path = "dict/";
     } else {
         this.dic_path = option.dicPath;
     }
+    this.fileDataProvider = option.fileDataProvider;
+    this.build = this.build.bind(this);
 }
 
 /**
@@ -39,7 +43,13 @@ function TokenizerBuilder(option) {
  * @param {TokenizerBuilder~onLoad} callback Callback function
  */
 TokenizerBuilder.prototype.build = function (callback) {
-    var loader = new DictionaryLoader(this.dic_path);
+    var loader;
+    if(this.fileDataProvider){
+        loader = new CustomDictionaryLoader(this.dic_path, this.fileDataProvider);
+    }
+    else{
+        loader = new DictionaryLoader(this.dic_path);
+    }
     loader.load(function (err, dic) {
         callback(err, new Tokenizer(dic));
     });
